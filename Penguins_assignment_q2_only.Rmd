@@ -1,0 +1,166 @@
+---
+title: "Homework Template"
+output:
+  html_document: default
+  pdf_document: default
+date: "2023-10-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Introduction
+The Palmer Penguins dataset contains data for three penguin species (Adelie, Chinstrap, Gentoo) across three islands (Briscoe, Torgersen, Dream) in the Palmer archipelago in Antarctica. These data are sexed, and contain values for multiple morphological measures. One such measure is culmen length, which describes dorsal ridge length of dorsal ridge of the penguins' bills, measured in millimetres. We might expect there to be differences in this measure between species, for example, if the species occupy different specialist feeding niches, as a longer bill might be better suited for a certain fishing behaviour only performed by one species.
+
+We might also expect these species to exhibit a level of sexual dimorphism, with males perhaps being larger than females, which might also correspond to a longer culmen length in males. The degree of sexual dimorphism in culmen length might also vary between species. This might be due to different ecological conditions, for example, if competition for mates is higher in one species, we might expect more extreme length differences.
+
+Whilst we cannot test explicitly test ecological hypotheses with these data, we can examine whether or not these relationships exist and test whether or not they are statistically significant, and speculate about what might drive this.
+
+#####Step 1: Load the data
+This includes the required packages we just installed and the cleaning functions written in separate R file in this project. We should also save the raw data.
+```{r Data Exploration}
+#Load the functions
+source("functions/libraries.r")
+source("functions/cleaning.r")
+source("functions/plotting.r")
+
+#Save raw data
+write.csv(penguins_raw, "data/penguins_raw.csv")
+```
+
+######Step 2: Clean the data
+These cleaning functions make our data easier to process and read, and saves this new cleaned data as a separate dataset.
+1. Change column titles to lower case and snake case.
+2. Remove any empty columns or rows
+3. Shorten species names to one-word common names
+4. Shorten sex to 'M' and 'F'
+5. Remove any rows containing 'NA'
+```{r Data Exploration}
+#Clean the data using our cleaning functions
+penguins_clean <- penguins_raw %>%
+    clean_column_names() %>%
+  remove_empty_cols_rows() %>%
+  shorten_species() %>%
+  shorten_sex()
+
+#Save the cleaned data
+write.csv(penguins_clean, "data/penguins_clean.csv")
+```
+
+#####Step 3: Filter the data
+```{r}
+#Subset data so it only includes variables of interest
+culmen_length_data <- penguins_clean %>%
+    subset_cols(c("culmen_length_mm", "species","sex")) %>%
+    remove_NA()
+
+#Check the dataset
+head(culmen_length_data)
+```
+
+#####Step 3:Make an Exploratory Plot
+Now the data has been cleaned, it can begin to be processed. Starting with an exploratory plot enables us to start to see a relationship between our variables by looking at the distribution of the raw data.
+
+I would like to look at the distribution of culmen lengths by sex for each species, so I can see if there might be any differences here. A violin plot will allow me to see (a) the range of values of this variable by sex and species (b) the distribution of this values as a density curve. I have decided to include a basic plot of the mean of each group, plus 1x its standard deviation, to tell us a bit more about the properties of each group and see visually how they might compare. 
+```{r}
+#Create an exploratory plot, a violin plot
+culmen_length_violin_plot <- plot_violin_figure(culmen_length_data)
+culmen_length_violin_plot
+
+#Save this plot
+save_violin_plot_svg(culmen_length_data, 
+                      "figures/fig01_vector.svg", 
+                      size = 15, scaling = 1)
+save_violin_plot_png(culmen_length_data, 
+                      "figures/fig01_png.png", 
+                      size = 15, res = 600, scaling=1)
+```
+### Hypotheses
+#####Step 4: State Hypotheses
+######Hypothesis 1:
+**Null hypothesis:** There is no significant difference in the mean culmen lengths of any of the three penguin species. 
+
+**Alternative hypothesis:**There is a significant difference in the mean culmen lengths for at least one of the three penguin species.
+
+######Hypothesis 2:
+**Null hypothesis:** There is no significant difference in the mean culmen lengths of male and female penguins.
+
+**Alternative hypothesis:**There is a significant difference in the mean culmen lengths of male and female penguins.
+
+#######Hypothesis 3:
+**Null hypothesis:** There is no interaction between species and sex, so the relationship between species and culmen length is the same for both sexes, and the relationship between sex and culmen length is the same for all three species. 
+
+**Alternative hypothesis:** There is an interaction between species and sex, so the relationship between species and culmen length is different for females and males, and the relationship between sex and culmen length is dependent on the species. 
+
+
+### Statistical Methods
+To test these hypotheses, I will use a two-way ANOVA test. This is because I have two categorical variables (sex, species), and I would like to determine the effect of these on a continuous numerical variable (culmen length). Each penguin represents an independent experimental unit, which means I can use an ANOVA test.
+
+#####Step 5a: Fit a linear model
+```{r Statistics}
+#TWO-WAY ANOVA for effect of factors sex and species on culmen length
+culmen_model <- lm(culmen_length_mm ~ sex*species, culmen_length_data)
+```
+
+#####Step 5b: Check assumptions
+Before I can run the ANOVA, I need to check that the data satisfies the other assumptions of this test, so that:
+(a)Data is normally distributed
+(b)Variance among groups is about equal
+
+I will do this by plotting a normal q-q plot and a residuals vs fitted plot.
+```{r Statistics}
+#Check that linear model fits assumptions
+plot(culmen_model, which=2) 
+plot(culmen_model, which=1)
+```
+Looking at the normal q-q plot, it is not entirely linear, as we would expect, however we can ignore this violation because we have a large enough sample size. The residuals vs fitted plot are evenly distributed around the central line and don't show any 'funnel' shape, which suggests our equal variance assumption is not violated. This means we can continue with the two-way ANOVA analysis.
+
+#####Step 6: Perform the two-way ANOVA test
+```{r Statistics}
+#Run summary statistics on the model and perform two-way anova test
+summary(culmen_model)
+anova(culmen_model)
+```
+The ANOVA table shows that there is a significant difference in culmen length between females and males (p<0.001), and between at least one pair of the three species (p<0.001). There is no significant interaction between sex and species (p=0.10).
+
+#####Step 7: Perform Tukey-Kramer test
+Since we have found a significant difference for species, we can then run a Tukey-Kramer test to determine which species are significantly different from one another.
+```{r}
+#Tukey-Kramer test to see which specific means were significantly different
+TukeyHSD(aov(culmen_model))
+```
+Note that we should ignore 'sex', as this is already a pairwise interaction. Looking at 'species', there is a significant difference in the mean culmen lengths between all pairs of species (p<0.001). Looking at 'sex:species', we can see the differences for each combination pair. All of these were statistically signficant (p<0.05), except for the difference in mean culmen length between female gentoos and chinstraps (p=0.33).
+
+We can plot the results of this model to enable us to more easily interpret our results.
+### Results & Discussion
+#####Step 8: Plot the results of the model
+```{r}
+#Create a column in the penguins_clean dataset, and put in the culmen length values predicted by the linear model according to species and sex
+culmen_length_data$predicted_culmen_length_mm <- predict(culmen_model)
+#Reorder species so that the legend corresponds logically to the plot
+culmen_length_data$species <- factor(culmen_length_data$species, levels = c("Chinstrap", "Gentoo", "Adelie"))
+
+#Create the plot using the function
+scatter_plot <- plot_scatter_figure(culmen_length_data)
+scatter_plot
+
+#Save the plots
+save_scatter_plot_svg(culmen_length_data, 
+                      "figures/fig02_vector.svg", 
+                      size = 15, scaling = 1)
+save_scatter_plot_png(culmen_length_data, 
+                      "figures/fig02_png.png", 
+                      size = 15, res = 600, scaling=1)
+```
+From the results of the statistical tests and above plot, we can reject our first null hypothesis, as there is a statistically significant difference in the mean culmen lengths of all species (p<0.001).
+
+We can also reject our second null hypothesis, as there is a statistically signficant difference in mean culmen length between females and males. In the above plot, we can see that males appear to have longer culmens than females, which is evidence of sexual dimorphism of this trait.
+
+However, we cannot reject our third null hypothesis, as there was no statistically significant interaction between sex and species (p=0.10). The relationship between species and mean culmen length is the same for both sexes, with Chinstrap being the longest, followed by Gentoo, then Adelie being the smallest. Similarly,the relationship between sex and culmen length is the same for all three species, which males having longer culmens than females, hence the lines on the graph showing the same positive relationship.
+
+
+###Conclusion
+There is evidence of sexual dimorphism of culmen length in all three species groups surveyed, as well as differences between all three species. Further research might look to link these findings to ecological factors, such as by observation of mating behaviours or feeding niches, which would allow us to make biologically-relevant conclusions about these results.
+
+Further analysis using this dataset might also look to see if this pattern holds for other morphological features, such as culmen depth, or flipper length, or whether this pattern is true across the three islands as well.

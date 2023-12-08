@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### Introduction
-The Palmer Penguins dataset contains data for three penguin species (Adelie, Chinstrap, Gentoo) across three islands (Briscoe, Torgersen, Dream) in the Palmer archipelago in Antarctica. These data are sexed, and contain values for multiple morphological measures. One such measure is culmen length, which describes dorsal ridge length of dorsal ridge of the penguins' bills, measured in millimetres. We might expect there to be differences in this measure between species, for example, if the species occupy different specialist feeding niches, as a longer bill might be better suited for a certain fishing behaviour only performed by one species.
+The Palmer Penguins dataset contains data for three penguin species (Adelie, Chinstrap, Gentoo) across three islands (Briscoe, Torgersen, Dream) in the Palmer archipelago in Antarctica. These data are sexed, and contain values for multiple morphological measures. One such measure is culmen length, which describes dorsal ridge length of the penguins' bills, measured in millimetres. We might expect there to be differences in this measure between species, for example, if the species occupy different specialist feeding niches, as a longer bill might be better suited for a certain fishing behaviour only performed by one species.
 
 We might also expect these species to exhibit a level of sexual dimorphism, with males perhaps being larger than females, which might also correspond to a longer culmen length in males. The degree of sexual dimorphism in culmen length might also vary between species. This might be due to different ecological conditions, for example, if competition for mates is higher in one species, we might expect more extreme length differences.
 

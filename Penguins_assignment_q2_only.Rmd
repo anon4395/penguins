@@ -18,7 +18,7 @@ We might also expect these species to exhibit a level of sexual dimorphism, with
 Whilst we cannot test explicitly test ecological hypotheses with these data, we can examine whether or not these relationships exist and test whether or not they are statistically significant, and speculate about what might drive this.
 
 #####Step 1: Load the data
-This includes the required packages we just installed and the cleaning functions written in separate R file in this project. We should also save the raw data.
+This includes installing the required packages from libraries.r, the cleaning functions from cleaning.r, and the plotting functions from plotting.r. We should also save the raw data.
 ```{r Data Exploration}
 #Load the functions
 source("functions/libraries.r")

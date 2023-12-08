@@ -62,7 +62,7 @@ head(culmen_length_data)
 #####Step 3:Make an Exploratory Plot
 Now the data has been cleaned, it can begin to be processed. Starting with an exploratory plot enables us to start to see a relationship between our variables by looking at the distribution of the raw data.
 
-I would like to look at the distribution of culmen lengths by sex for each species, so I can see if there might be any differences here. A violin plot will allow me to see (a) the range of values of this variable by sex and species (b) the distribution of this values as a density curve. I have decided to include a basic plot of the mean of each group, plus 1x its standard deviation, to tell us a bit more about the properties of each group and see visually how they might compare. 
+I would like to look at the distribution of culmen lengths by sex for each species, so I can see if there might be any differences here. A violin plot will allow me to see (a) the range of values of this variable by sex and species (b) the distribution of these values as a density curve. I have decided to include a basic plot of the mean of each group, plus 1x its standard deviation, to tell us a bit more about the properties of each group and see visually how they might compare. 
 ```{r}
 #Create an exploratory plot, a violin plot
 culmen_length_violin_plot <- plot_violin_figure(culmen_length_data)
